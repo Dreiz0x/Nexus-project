@@ -11,7 +11,7 @@
 - Opens documents directly from search results
 - 100% offline — no cloud, no telemetria
 
-## Setup
+## Setup 
 
 ### 1. Clone and build
 ```bash
