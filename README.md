@@ -1,5 +1,5 @@
 # NEXUS — Personal Document Intelligence System
-
+ 
 > *Your documents. Your device. Your AI.*
 
 ## What it does  
