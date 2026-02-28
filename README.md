@@ -60,4 +60,4 @@ Push to `main` → APK built automatically → Download from Actions artifacts t
 ## Requirements
 - Android 8.0+ (API 26)
 - ~200MB RAM for document parsing
-- Local AI server running at configured address (optional — app works offline without it)
+- Local AI server running at configured address (optional — app works offline without it) 
