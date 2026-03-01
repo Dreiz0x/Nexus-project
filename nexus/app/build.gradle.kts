@@ -56,7 +56,6 @@ android {
 }
 
 dependencies {
-    // Material Design 3
     implementation("com.google.android.material:material:1.11.0")
 
     // UI y Compose
@@ -91,8 +90,9 @@ dependencies {
     // Coroutines
     implementation(libs.coroutines.android)
 
-    // --- DOCUMENT PARSING (Rutas Corregidas) ---
-    implementation("com.github.TomRoush:PdfBox-Android:2.0.27.0")
+    // --- DOCUMENT PARSING (VERSIÓN OFICIAL MAVEN) ---
+    // Usamos IText para PDF (más estable en MavenCentral) y POI para Word
+    implementation("com.itextpdf:itext7-core:7.2.5") 
     implementation("org.apache.poi:poi:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
     implementation("org.apache.poi:poi-scratchpad:5.2.5") 
