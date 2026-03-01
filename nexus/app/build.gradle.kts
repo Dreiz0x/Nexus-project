@@ -56,6 +56,10 @@ android {
 }
 
 dependencies {
+    // --- LA PIEZA CLAVE PARA MATERIAL 3 EN XML ---
+    implementation("com.google.android.material:material:1.11.0")
+
+    // UI y Compose
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -68,12 +72,12 @@ dependencies {
     implementation(libs.androidx.material.icons)
     implementation(libs.androidx.navigation.compose)
 
-    // DI
+    // DI (Hilt)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // Database
+    // Database (Room)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
