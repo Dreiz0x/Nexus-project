@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.nexus.ui.theme.NexusTheme
 import kotlin.math.*
 
-// -- Grid background --
 @Composable
 fun HudGrid(modifier: Modifier = Modifier) {
     val gridColor = NexusTheme.colors.grid
@@ -42,7 +41,6 @@ fun HudGrid(modifier: Modifier = Modifier) {
     }
 }
 
-// -- Hud Panel --
 @Composable
 fun HudPanel(
     modifier: Modifier = Modifier,
@@ -83,7 +81,6 @@ fun HudPanel(
     }
 }
 
-// -- Hud Button (Indispensable para Settings) --
 @Composable
 fun HudButton(
     text: String,
@@ -98,14 +95,12 @@ fun HudButton(
             containerColor = primary.copy(alpha = 0.1f),
             contentColor = primary
         ),
-        shape = RoundedCornerShape(2.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        shape = RoundedCornerShape(2.dp)
     ) {
         Text(text.uppercase(), style = NexusTheme.typography.labelSmall)
     }
 }
 
-// -- Hud TextField (Para que funcione NEXUS CONFIG) --
 @Composable
 fun HudTextField(
     label: String,
@@ -132,7 +127,91 @@ fun HudTextField(
     )
 }
 
-// -- Document Card (Con clickable corregido) --
+@Composable
+fun RadarPulse(
+    modifier: Modifier = Modifier,
+    size: Dp = 120.dp,
+    active: Boolean = true
+) {
+    val primary = NexusTheme.colors.primary
+    val transition = rememberInfiniteTransition(label = "radar")
+    val pulse1 by transition.animateFloat(
+        initialValue = 0f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing)),
+        label = "pulse1"
+    )
+
+    Canvas(modifier = modifier.size(size)) {
+        val center = Offset(this.size.width / 2, this.size.height / 2)
+        val radius = this.size.minDimension / 2f
+        drawCircle(primary.copy(alpha = 0.05f), radius, center)
+        drawCircle(primary.copy(alpha = 0.3f), radius, center, style = Stroke(1f))
+        if (active) {
+            drawCircle(
+                primary.copy(alpha = (1f - pulse1) * 0.5f),
+                radius * pulse1,
+                center,
+                style = Stroke(2f * (1f - pulse1))
+            )
+        }
+    }
+}
+
+@Composable
+fun StatCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    accent: Color? = null
+) {
+    val colors = NexusTheme.colors
+    val accentColor = accent ?: colors.primary
+    HudPanel(modifier = modifier.padding(4.dp)) {
+        Column(Modifier.padding(12.dp)) {
+            Text(value, style = NexusTheme.typography.displayMedium, color = accentColor)
+            Text(label.uppercase(), style = NexusTheme.typography.labelSmall, color = colors.onSurface)
+        }
+    }
+}
+
+@Composable
+fun HudProgressBar(
+    progress: Float,
+    modifier: Modifier = Modifier,
+    label: String = "INDEXING"
+) {
+    val colors = NexusTheme.colors
+    Column(modifier) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = NexusTheme.typography.labelSmall, color = colors.primary)
+            Text("${(progress * 100).toInt()}%", style = NexusTheme.typography.labelSmall, color = colors.primary)
+        }
+        Box(
+            Modifier.fillMaxWidth().height(6.dp).background(colors.surfaceVariant, RoundedCornerShape(3.dp)).clip(RoundedCornerShape(3.dp))
+        ) {
+            Box(Modifier.fillMaxHeight().fillMaxWidth(progress).background(colors.primary))
+        }
+    }
+}
+
+@Composable
+fun TypewriterText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: androidx.compose.ui.text.TextStyle = NexusTheme.typography.bodyMedium,
+    color: Color = Color.Unspecified
+) {
+    var displayedText by remember(text) { mutableStateOf("") }
+    LaunchedEffect(text) {
+        displayedText = ""
+        text.forEachIndexed { i, _ ->
+            kotlinx.coroutines.delay(18)
+            displayedText = text.substring(0, i + 1)
+        }
+    }
+    Text(displayedText, modifier = modifier, style = style, color = color)
+}
+
 @Composable
 fun DocumentCard(
     name: String,
@@ -143,33 +222,12 @@ fun DocumentCard(
     onClick: () -> Unit = {}
 ) {
     val colors = NexusTheme.colors
-    val extColor = when (extension.lowercase()) {
-        "pdf"  -> colors.accent
-        "xlsx", "xls", "csv" -> colors.secondary
-        "docx", "doc"        -> colors.primary
-        "pptx", "ppt"        -> colors.warning
-        else                 -> colors.onSurface
-    }
-
     HudPanel(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .clickable { onClick() }, // Corrección aquí
+        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onClick() },
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(40.dp).background(extColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp)).border(1.dp, extColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(extension.uppercase().take(3), style = NexusTheme.typography.labelSmall, color = extColor)
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(name, style = NexusTheme.typography.titleMedium, color = colors.onBackground, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(snippet, style = NexusTheme.typography.bodySmall, color = colors.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(path, style = NexusTheme.typography.labelSmall, color = colors.primaryDim, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
+        Column(Modifier.padding(12.dp)) {
+            Text(name, style = NexusTheme.typography.titleMedium, color = colors.onBackground)
+            Text(snippet, style = NexusTheme.typography.bodySmall, color = colors.onSurface)
         }
     }
 }
