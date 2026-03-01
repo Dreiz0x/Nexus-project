@@ -4,8 +4,11 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,7 +51,6 @@ fun HudPanel(
 ) {
     val primary = NexusTheme.colors.primary
     val surface = NexusTheme.colors.surface
-    val colors = NexusTheme.colors
 
     Box(
         modifier = modifier
@@ -81,6 +83,28 @@ fun HudPanel(
     }
 }
 
+// ── Hud Button (Faltaba para Settings) ────────────────────────────────────────
+@Composable
+fun HudButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val primary = NexusTheme.colors.primary
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .border(1.dp, primary, RoundedCornerShape(4.dp)),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = primary.copy(alpha = 0.15f),
+            contentColor = primary
+        ),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Text(text = text.uppercase(), style = NexusTheme.typography.labelSmall)
+    }
+}
+
 // ── Animated radar circle ─────────────────────────────────────────────────────
 @Composable
 fun RadarPulse(
@@ -105,27 +129,19 @@ fun RadarPulse(
         val center = Offset(this.size.width / 2, this.size.height / 2)
         val radius = this.size.minDimension / 2f
 
-        // Background circle
         drawCircle(primary.copy(alpha = 0.05f), radius, center)
-        // Ring
         drawCircle(primary.copy(alpha = 0.3f), radius, center, style = Stroke(1f))
         drawCircle(primary.copy(alpha = 0.15f), radius * 0.66f, center, style = Stroke(1f))
         drawCircle(primary.copy(alpha = 0.1f), radius * 0.33f, center, style = Stroke(1f))
 
         if (active) {
-            // Sweep
             val sweepBrush = Brush.sweepGradient(
                 0f to Color.Transparent,
                 0.25f to primary.copy(alpha = 0.5f),
                 0.25f to Color.Transparent,
                 center = center
             )
-            drawCircle(
-                brush = sweepBrush,
-                radius = radius,
-                center = center,
-            )
-            // Pulse ring
+            drawCircle(brush = sweepBrush, radius = radius, center = center)
             drawCircle(
                 primary.copy(alpha = (1f - pulse1) * 0.5f),
                 radius * pulse1,
@@ -134,13 +150,12 @@ fun RadarPulse(
             )
         }
 
-        // Cross hairs
         drawLine(primary.copy(alpha = 0.2f), Offset(center.x - radius, center.y), Offset(center.x + radius, center.y), 0.5f)
         drawLine(primary.copy(alpha = 0.2f), Offset(center.x, center.y - radius), Offset(center.x, center.y + radius), 0.5f)
     }
 }
 
-// ── HUD stat counter card ─────────────────────────────────────────────────────
+// ── Stat Card ─────────────────────────────────────────────────────────────────
 @Composable
 fun StatCard(
     label: String,
@@ -159,7 +174,7 @@ fun StatCard(
     }
 }
 
-// ── Scanning progress bar ─────────────────────────────────────────────────────
+// ── Progress Bar ──────────────────────────────────────────────────────────────
 @Composable
 fun HudProgressBar(
     progress: Float,
@@ -175,10 +190,7 @@ fun HudProgressBar(
     )
 
     Column(modifier) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, style = NexusTheme.typography.labelSmall, color = colors.primary)
             Text("${(progress * 100).toInt()}%", style = NexusTheme.typography.labelSmall, color = colors.primary)
         }
@@ -199,21 +211,17 @@ fun HudProgressBar(
                         RoundedCornerShape(3.dp)
                     )
             )
-            // Scan shimmer
             if (progress > 0f && progress < 1f) {
                 Canvas(Modifier.fillMaxSize()) {
                     val x = scanX * size.width
-                    drawLine(
-                        Color.White.copy(alpha = 0.6f),
-                        Offset(x, 0f), Offset(x, size.height), strokeWidth = 2f
-                    )
+                    drawLine(Color.White.copy(alpha = 0.6f), Offset(x, 0f), Offset(x, size.height), strokeWidth = 2f)
                 }
             }
         }
     }
 }
 
-// ── Document result card ──────────────────────────────────────────────────────
+// ── Document Card (Corregido el Clickable) ─────────────────────────────────────
 @Composable
 fun DocumentCard(
     name: String,
@@ -232,14 +240,13 @@ fun DocumentCard(
         else                 -> colors.onSurface
     }
 
-    androidx.compose.foundation.clickable(onClick = onClick) {}
     HudPanel(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clickable(onClick = onClick), // ASÍ ES COMO SE USA CLICKABLE
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            // Extension badge
             Box(
                 Modifier
                     .size(40.dp)
@@ -261,7 +268,7 @@ fun DocumentCard(
     }
 }
 
-// ── Typewriter text effect ────────────────────────────────────────────────────
+// ── Typewriter Text ───────────────────────────────────────────────────────────
 @Composable
 fun TypewriterText(
     text: String,
@@ -272,7 +279,7 @@ fun TypewriterText(
     var displayedText by remember(text) { mutableStateOf("") }
     LaunchedEffect(text) {
         displayedText = ""
-        text.forEachIndexed { i, c ->
+        text.forEachIndexed { i, _ ->
             kotlinx.coroutines.delay(18)
             displayedText = text.substring(0, i + 1)
         }
