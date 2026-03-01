@@ -1,4 +1,3 @@
-./gradlew assembleDebug
 #!/bin/sh
 
 #
