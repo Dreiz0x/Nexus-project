@@ -91,8 +91,8 @@ dependencies {
     // Coroutines
     implementation(libs.coroutines.android)
 
-    // --- DOCUMENT PARSING (Rutas Directas para evitar errores de libs.toml) ---
-    implementation("com.tom-roush:pdfbox-android:2.0.27")
+    // --- DOCUMENT PARSING (Rutas Corregidas) ---
+    implementation("com.github.TomRoush:PdfBox-Android:2.0.27.0")
     implementation("org.apache.poi:poi:5.2.5")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
     implementation("org.apache.poi:poi-scratchpad:5.2.5") 
