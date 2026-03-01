@@ -1,12 +1,14 @@
 package com.nexus.data.repository
 
 import android.content.Context
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.text.PDFTextStripper
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.apache.poi.xslf.usermodel.XMLSlideShow
 import org.apache.poi.xwpf.usermodel.XWPFDocument
 import java.io.File
+import java.lang.StringBuilder
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,20 +31,29 @@ class DocumentExtractor @Inject constructor(private val context: Context) {
     }
 
     private fun extractPdf(file: File): String {
-        PDDocument.load(file).use { doc ->
-            return PDFTextStripper().getText(doc)
-        }
+        val text = StringBuilder()
+        try {
+            val reader = PdfReader(file)
+            val pdfDoc = PdfDocument(reader)
+            for (i in 1..pdfDoc.numberOfPages) {
+                text.append(PdfTextExtractor.getTextFromPage(pdfDoc.getPage(i)))
+            }
+            pdfDoc.close()
+        } catch (e: Exception) { }
+        return text.toString()
     }
 
     private fun extractDocx(file: File): String {
-        XWPFDocument(file.inputStream()).use { doc ->
-            return doc.paragraphs.joinToString("\n") { it.text }
-        }
+        return try {
+            XWPFDocument(file.inputStream()).use { doc ->
+                doc.paragraphs.joinToString("\n") { it.text }
+            }
+        } catch (e: Exception) { "" }
     }
 
     private fun extractDoc(file: File): String {
-        // Basic DOC support via POI HWPF
         return try {
+            // Esto usa poi-scratchpad que ya agregamos al gradle
             val hwpf = org.apache.poi.hwpf.HWPFDocument(file.inputStream())
             hwpf.range.text()
         } catch (e: Exception) { "" }
@@ -50,31 +61,35 @@ class DocumentExtractor @Inject constructor(private val context: Context) {
 
     private fun extractExcel(file: File): String {
         if (file.extension.lowercase() == "csv") return file.readText()
-        WorkbookFactory.create(file.inputStream()).use { wb ->
-            val sb = StringBuilder()
-            for (i in 0 until wb.numberOfSheets) {
-                val sheet = wb.getSheetAt(i)
-                sb.appendLine("SHEET: ${sheet.sheetName}")
-                sheet.forEach { row ->
-                    val line = row.joinToString("\t") { cell ->
-                        cell.toString()
+        return try {
+            WorkbookFactory.create(file.inputStream()).use { wb ->
+                val sb = StringBuilder()
+                for (i in 0 until wb.numberOfSheets) {
+                    val sheet = wb.getSheetAt(i)
+                    sb.appendLine("SHEET: ${sheet.sheetName}")
+                    sheet.forEach { row ->
+                        val line = row.joinToString("\t") { cell ->
+                            cell.toString()
+                        }
+                        sb.appendLine(line)
                     }
-                    sb.appendLine(line)
                 }
+                sb.toString()
             }
-            return sb.toString()
-        }
+        } catch (e: Exception) { "" }
     }
 
     private fun extractPptx(file: File): String {
-        XMLSlideShow(file.inputStream()).use { ppt ->
-            return ppt.slides.joinToString("\n---\n") { slide ->
-                slide.shapes.joinToString("\n") { shape ->
-                    if (shape is org.apache.poi.xslf.usermodel.XSLFTextShape)
-                        shape.text else ""
+        return try {
+            XMLSlideShow(file.inputStream()).use { ppt ->
+                ppt.slides.joinToString("\n---\n") { slide ->
+                    slide.shapes.joinToString("\n") { shape ->
+                        if (shape is org.apache.poi.xslf.usermodel.XSLFTextShape)
+                            shape.text else ""
+                    }
                 }
             }
-        }
+        } catch (e: Exception) { "" }
     }
 
     val supportedExtensions = setOf(
