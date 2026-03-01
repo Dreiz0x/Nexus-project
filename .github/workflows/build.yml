@@ -16,18 +16,22 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Generate Gradle Wrapper
-        working-directory: nexus
-        run: gradle wrapper --gradle-version 8.6
-
-      - name: Build APK
-        working-directory: nexus
+      - name: Find project and build
         run: |
+          # Encuentra donde está build.gradle.kts
+          BUILD_DIR=$(find . -name "build.gradle.kts" -not -path "*/app/*" | head -1 | xargs dirname)
+          echo "Project found at: $BUILD_DIR"
+          cd $BUILD_DIR
+          
+          # Genera wrapper
+          gradle wrapper --gradle-version 8.6
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          
+          # Compila
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: nexus-apk
-          path: nexus/app/build/outputs/apk/debug/app-debug.apk
+          path: "**/app-debug.apk"
