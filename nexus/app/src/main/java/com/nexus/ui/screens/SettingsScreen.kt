@@ -1,5 +1,10 @@
 package com.nexus.ui.screens
 
+import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +26,23 @@ import com.nexus.ui.components.HudTextField
 import com.nexus.ui.theme.NexusTheme
 import com.nexus.ui.viewmodel.SettingsViewModel
 
+/** Convierte una content:// URI del SAF a un path real /storage/emulated/0/... */
+fun uriToRealPath(uri: Uri): String? {
+    return try {
+        val docId = DocumentsContract.getTreeDocumentId(uri)
+        val parts = docId.split(":")
+        val storageType = parts[0]
+        val relativePath = parts.getOrElse(1) { "" }
+        if (storageType.equals("primary", ignoreCase = true)) {
+            "${Environment.getExternalStorageDirectory()}/$relativePath"
+        } else {
+            "/storage/$storageType/$relativePath"
+        }
+    } catch (e: Exception) {
+        uri.path
+    }
+}
+
 @Composable
 fun SettingsScreen(
     navController: NavController,
@@ -28,6 +50,16 @@ fun SettingsScreen(
 ) {
     val colors = NexusTheme.colors
     val settings by vm.settings.collectAsState()
+
+    // ── Folder picker real con Storage Access Framework ──────────────────────
+    val folderPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            val realPath = uriToRealPath(uri)
+            if (realPath != null) vm.addFolder(realPath)
+        }
+    }
 
     Box(Modifier.fillMaxSize().background(colors.background)) {
         HudGrid(Modifier.fillMaxSize())
@@ -57,6 +89,9 @@ fun SettingsScreen(
 
             HudPanel(title = "MONITORED SECTORS") {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (settings.watchedFolders.isEmpty()) {
+                        Text("▷ Sin sectores — toca ADD FOLDER", style = NexusTheme.typography.bodySmall, color = colors.onSurface)
+                    }
                     settings.watchedFolders.forEach { folder ->
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text("▶ $folder", style = NexusTheme.typography.bodySmall, color = colors.onBackground, modifier = Modifier.weight(1f))
@@ -65,7 +100,7 @@ fun SettingsScreen(
                             }
                         }
                     }
-                    HudButton("ADD FOLDER", onClick = { vm.pickFolder() }, modifier = Modifier.fillMaxWidth())
+                    HudButton("ADD FOLDER", onClick = { folderPicker.launch(null) }, modifier = Modifier.fillMaxWidth())
                 }
             }
 
