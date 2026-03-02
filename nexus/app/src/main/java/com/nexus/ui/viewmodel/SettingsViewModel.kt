@@ -1,7 +1,5 @@
 package com.nexus.ui.viewmodel
 
-import android.app.Activity
-import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexus.data.model.AppSettings
@@ -38,11 +36,12 @@ class SettingsViewModel @Inject constructor(
         )
     }
 
-    fun pickFolder() {
-        // In real implementation, launch a directory picker intent
-        // For now, add a default path as placeholder
-        val newFolders = _settings.value.watchedFolders + "/storage/emulated/0/NEW_FOLDER"
-        _settings.value = _settings.value.copy(watchedFolders = newFolders)
+    fun addFolder(path: String) {
+        if (path.isNotBlank() && path !in _settings.value.watchedFolders) {
+            _settings.value = _settings.value.copy(
+                watchedFolders = _settings.value.watchedFolders + path
+            )
+        }
     }
 
     fun testConnection() = viewModelScope.launch {
