@@ -139,36 +139,39 @@ fun SearchScreen(
                 }
             }
 
-            // ── Resultados Google Drive ────────────────────────────────────
-            if (driveResults.isNotEmpty()) {
-                item {
-                    SectionHeader("☁ GOOGLE DRIVE — NEXUS COMPARTIDO")
-                }
-                items(driveResults) { doc ->
-                    DocumentCard(
-                        name = doc.name, path = doc.path,
-                        extension = doc.extension, snippet = doc.snippet,
-                        accentColor = Color(0xFF4285F4),
-                        onClick = { vm.openDriveDocument(doc) }
-                    )
-                }
-            }
+            // Resultados Google Drive
+if (driveResults.isNotEmpty()) {
+    item {
+        SectionHeader("☁ GOOGLE DRIVE — NEXUS COMPARTIDO")
+    }
+    items(driveResults) { doc ->
+        DocumentCard(
+            name = doc.name,
+            path = doc.path,
+            extension = doc.extension,
+            snippet = doc.snippet,
+            onClick = { vm.openDriveDocument(doc) }
+        )
+    }
+}
 
-            // ── Resultados red WiFi ────────────────────────────────────────
-            if (networkResults.isNotEmpty()) {
-                item {
-                    SectionHeader("📡 RED LOCAL WiFi")
-                }
-                items(networkResults) { doc ->
-                    DocumentCard(
-                        name = doc.name, path = doc.path,
-                        extension = doc.extension, snippet = doc.snippet,
-                        accentColor = NexusTheme.colors.accent,
-                        onClick = { vm.openNetworkDocument(doc) }
-                    )
-                }
-            }
+// Resultados red WiFi
+if (networkResults.isNotEmpty()) {
+    item {
+        SectionHeader("📡 RED LOCAL WiFi")
+    }
+    items(networkResults) { doc ->
+        DocumentCard(
+            name = doc.name,
+            path = doc.path,
+            extension = doc.extension,
+            snippet = doc.snippet,
+            onClick = { vm.openNetworkDocument(doc) }
+        )
+    }
+}
 
+     
             // ── Sin resultados ─────────────────────────────────────────────
             if (totalResults == 0 && !isSearching && query.isNotEmpty()) {
                 item {
