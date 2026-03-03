@@ -1,5 +1,6 @@
 package com.nexus.ui.viewmodel
 
+import com.nexus.data.repository.NetworkDevice
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
