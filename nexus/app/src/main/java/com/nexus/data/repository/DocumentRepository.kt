@@ -205,13 +205,17 @@ class DocumentRepository @Inject constructor(
     } catch (e: Exception) { floatArrayOf() }
 
     private fun cosineSimilarity(a: FloatArray, b: FloatArray): Float {
-        if (a.size != b.size || a.isEmpty()) return 0f
-        var dot = 0f; var normA = 0f; var normB = 0f
-        for (i in a.indices) {
-            dot += a[i] * b[i]; normA += a[i] * a[i]; normB += b[i] * b[i]
-        }
-        val denom = kotlin.math.sqrt(normA) * kotlin.math.sqrt(normB)
-        return if (denom == 0f) 0f else dot / denom
+    if (a.size != b.size || a.isEmpty()) return 0f
+    var dot = 0f
+    var normA = 0f
+    var normB = 0f
+    for (i in a.indices) {
+        dot += a[i] * b[i]
+        normA += a[i] * a[i]
+        normB += b[i] * b[i]
+    }
+    val denom = kotlin.math.sqrt(normA) * kotlin.math.sqrt(normB)
+    return if (denom == 0f) 0f else dot / denom
     }
 
     private fun extractSnippet(content: String, query: String): String {
