@@ -36,7 +36,7 @@ fun DashboardScreen(
     val colors = NexusTheme.colors
     val state by vm.uiState.collectAsState()
     val driveStatus by vm.driveStatus.collectAsState()
-    val networkDevices by vm.networkDevices.collectAsState()
+    val networkDevices = vm.networkDevices.collectAsState()
 
     var booted by remember { mutableStateOf(false) }
     val alpha by animateFloatAsState(if (booted) 1f else 0f, tween(800), label = "boot")
@@ -130,29 +130,30 @@ fun DashboardScreen(
                 }
 
                 // ── Dispositivos en red WiFi ───────────────────────────────
-                if (networkDevices.isNotEmpty()) {
-                    HudPanel(title = "📡 RED LOCAL — ${networkDevices.size} DISPOSITIVO(S)") {
-                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            networkDevices.forEach { device ->
-                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                    Column(Modifier.weight(1f)) {
-                                        Text(device.name,
-                                            style = NexusTheme.typography.bodySmall, color = colors.primary)
-                                        Text("${device.docCount} docs · ${device.host}",
-                                            style = NexusTheme.typography.labelSmall, color = colors.onSurface)
-                                    }
-                                    if (device.isSharing) {
-                                        Text("COMPARTIENDO",
-                                            style = NexusTheme.typography.labelSmall, color = colors.secondary)
-                                    }
-                                }
-                                if (networkDevices.last() != device) {
-                                    Divider(color = colors.primary.copy(alpha = 0.1f))
-                                }
-                            }
-                        }
+val devices = networkDevices.value
+if (devices.isNotEmpty()) {
+    HudPanel(title = "📡 RED LOCAL — ${devices.size} DISPOSITIVO(S)") {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            devices.forEach { device ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(device.name,
+                            style = NexusTheme.typography.bodySmall, color = colors.primary)
+                        Text("${device.docCount} docs · ${device.host}",
+                            style = NexusTheme.typography.labelSmall, color = colors.onSurface)
+                    }
+                    if (device.isSharing) {
+                        Text("COMPARTIENDO",
+                            style = NexusTheme.typography.labelSmall, color = colors.secondary)
                     }
                 }
+                if (device != devices.last()) {
+                    Divider(color = colors.primary.copy(alpha = 0.1f))
+                }
+            }
+        }
+    }
+}
 
                 // Powered by Gemma
                 HudPanel(title = "POWERED BY GEMMA") {
